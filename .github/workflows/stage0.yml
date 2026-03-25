@@ -54,12 +54,14 @@ jobs:
         chmod +x pure_vm.elf
         
         echo "--- Pure VM is now compiling the Compiler ---"
-        ./pure_vm.elf < src/compiler.spaces > compiler.elf
+        # 🚀 究極のハック: DBFIの仕様に従い、[コンパイラのBFコード] + [Nullバイト] + [コンパイル対象のSpacesコード] を一気に流し込む
+        (cat src/compiler_spaces_reader.bf; printf '\0'; cat src/compiler.spaces) | ./pure_vm.elf > compiler.elf
         chmod +x compiler.elf
         
         echo "✅ THE OUROBOROS IS COMPLETE: Spaces VM just compiled the Spaces Compiler."
         cp compiler.elf seed/fresh_compiler.elf
         rm -f src/ref/vm.c
+
 
     - name: 3. Basic Functional Tests
       run: |
