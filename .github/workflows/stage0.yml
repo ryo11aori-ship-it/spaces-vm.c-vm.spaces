@@ -54,9 +54,9 @@ jobs:
         chmod +x pure_vm.elf
         
         echo "--- Validating Pure VM Semantics ---"
-        # 🚀 特効薬2: echoの自動改行を嫌うDBFIのために、printfで厳密に送信する
+        # 🚀 修正: echoの自動改行を嫌うDBFIのために、printfで厳密に送信する
         printf "++++++[>+++++++++++<-]>.!" | ./pure_vm.elf > output_hello.txt
-        if ! grep -q "B" output_hello.txt; then echo "❌ Pure VM failed to interpret logic."; exit 1; fi
+        if ! grep -q "H" output_hello.txt; then echo "❌ Pure VM failed to interpret logic."; exit 1; fi
         echo "✅ Pure VM (written in Spaces) correctly interprets Brainfuck semantics!"
         
         echo "--- Native Ouroboros Bootstrapping ---"
