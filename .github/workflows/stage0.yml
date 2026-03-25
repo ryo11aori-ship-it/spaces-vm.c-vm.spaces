@@ -54,8 +54,8 @@ jobs:
         chmod +x pure_vm.elf
         
         echo "--- Pure VM is now compiling the Compiler ---"
-        # 🚀 究極のハック: DBFIの仕様に従い、[コンパイラのBFコード] + [Nullバイト] + [コンパイル対象のSpacesコード] を一気に流し込む
-        (cat src/compiler_spaces_reader.bf; printf '\0'; cat src/compiler.spaces) | ./pure_vm.elf > compiler.elf
+        # 🚀 究極のハック: DBFIの古代の掟に従い、[BFコード] と [入力データ] の間に「!」を挟む
+        (cat src/compiler_spaces_reader.bf; printf '!'; cat src/compiler.spaces) | ./pure_vm.elf > compiler.elf
         chmod +x compiler.elf
         
         echo "✅ THE OUROBOROS IS COMPLETE: Spaces VM just compiled the Spaces Compiler."
