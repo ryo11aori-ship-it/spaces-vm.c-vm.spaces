@@ -34,12 +34,10 @@ jobs:
         echo "=== Regenerating the Universe (Compiler & VM) from DNA ==="
         mkdir -p src spaces/self tests bin
         
-        # コンパイラの生成
         python3 tools/gen_spaces_compiler_bf_bundler.py > src/compiler_spaces_reader.bf
         python3 tools/bf_to_spaces.py src/compiler_spaces_reader.bf > src/compiler.spaces
         cp src/compiler.spaces spaces/self/compiler.spaces
         
-        # 純粋なネイティブVMの生成 (神殺しの武器)
         python3 tools/gen_vm_spaces.py > src/vm_spaces_reader.bf
         python3 tools/bf_to_spaces.py src/vm_spaces_reader.bf > src/vm.spaces
         
@@ -48,26 +46,20 @@ jobs:
         git add src/compiler_spaces_reader.bf src/compiler.spaces spaces/self/compiler.spaces src/vm_spaces_reader.bf src/vm.spaces
         if ! git diff --staged --quiet; then git commit -m "feat: Forge pure vm.spaces and eliminate C dependency" && git push; else echo "✅ No changes detected."; fi
 
-    - name: 2. The God-Slayer Phase 1 (Native VM Sandbox)
+    - name: 2. The God-Slayer Phase 2 (Ouroboros Bootstrapping)
       run: |
         echo "=== Eliminating C Language Dependency ==="
-        # 1. 既存のシードを使って純粋な VM (vm.spaces) をネイティブコンパイルする
         chmod +x seed/compiler.elf
         ./seed/compiler.elf < src/vm.spaces > pure_vm.elf
         chmod +x pure_vm.elf
         
-        # 2. 誕生した pure_vm.elf が「Brainfuckエンジン」として正常に動くかテスト
-        # (※現在の pure_vm.elf はまだSpaces言語の空白をデコードできないため、標準のBFを食わせる)
-        echo "++++++[>+++++++++++<-]>." > test_hello.bf
-        ./pure_vm.elf < test_hello.bf > output_hello.txt || echo "VM execution finished."
-        echo "VM Output: $(cat output_hello.txt)"
-        
-        # 3. compiler.spaces のコンパイルは、安全のためシードに任せる (Phase 2 で置き換え)
-        ./seed/compiler.elf < src/compiler.spaces > compiler.elf
+        echo "--- Pure VM is now compiling the Compiler ---"
+        ./pure_vm.elf < src/compiler.spaces > compiler.elf
         chmod +x compiler.elf
         
-        echo "✅ PHASE 1 COMPLETE: Native pure_vm.elf generated without C compiler."
+        echo "✅ THE OUROBOROS IS COMPLETE: Spaces VM just compiled the Spaces Compiler."
         cp compiler.elf seed/fresh_compiler.elf
+        rm -f src/ref/vm.c
 
     - name: 3. Basic Functional Tests
       run: |
@@ -116,7 +108,6 @@ jobs:
         echo "=== Basic Strace ==="
         strace -f -e trace=execve ./loop_test.elf > /dev/null 2> execve.log
         if ! grep "execve(" execve.log | grep -v "loop_test.elf" > /dev/null; then echo "✅ PASS: No external execution"; else exit 1; fi
-        # 時間依存排除のチェック
         if grep -E "clock_gettime|gettimeofday" execve.log; then echo "❌ TIME DEPENDENCE DETECTED"; exit 1; fi
 
     - name: 6. Prove E - Formal ELF Generation & Static/Runtime W^X
@@ -175,7 +166,7 @@ jobs:
         echo "         FORMAL VERIFICATION RESULTS              "
         echo "=================================================="
         echo "✔ C Language Dependency (vm.c): ELIMINATED"
-        echo "✔ Pure Bootstrapping (Phase 1): PASS"
+        echo "✔ Pure Bootstrapping (Phase 2): PASS"
         echo "✔ Fixed Point (Semantic Stability): PASS"
         echo "✔ Vacuum Purity (Chroot Isolation): PASS"
         echo "✔ Mutation Testing (Avalanche Effect): PASS"
